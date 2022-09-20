@@ -18,3 +18,4 @@ Outcomes:
 - Group
 - MMSE
 - CDR
+In the machine learning model we will (probably) just be looking at the group
