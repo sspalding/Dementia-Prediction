@@ -14,10 +14,10 @@ import plotly.graph_objects as go
 from dash import Dash, dash_table
 
 # get the data from the database
-conn = sqlite3.connect("Dementia.db")
-sql_string = 'SELECT * FROM Data_Wrangled'
-data_explore = pd.read_sql(sql_string, conn)
-Anova_pVal = pd.read_sql('select * from P_Values', conn)
+conn = sqlite3.connect("Dementia.db")                           # connect to the database
+sql_string = 'SELECT * FROM Data_Wrangled'                   
+data_explore = pd.read_sql(sql_string, conn)                    # this will be the main dataframe used for the dashboard
+Anova_pVal = pd.read_sql('select * from P_Values', conn)        # dataframe of ANOVA P-values calculated in exploratory data analysis
 
 # Create a dash application
 app = dash.Dash(__name__)
@@ -61,10 +61,12 @@ Patient Outcome Classification Type:
 [Link to dataset] (https://www.kaggle.com/datasets/shashwatwork/dementia-prediction-dataset)  
 [Link to Github] (https://github.com/sspalding/Dementia-Prediction)
 '''
+# markdown test - instruction to go above the bargraph section
 bargraph_text = '''The bar graph below is intended to give a visual representation of which features have the most impact on patient outcome.  
 **Instructions:**  
 Hover your mouse over the column you are interested in, this will display the group and the feature average value for that group.
 '''
+# markdown text - instuctions to go above the scatterplot section
 scatterplot_text = '''The scatter plots below are intended to provide an interactive indepth exploration on features impact on outcome classification type.  
 **Instructions:**  
 Choose a patient outcome classification type from the drop down menu on the right.  
@@ -73,6 +75,7 @@ The scatter plot on the left will display the data points for all the patients a
 The scatter plot on the right will display the data of one patient across all the visits that patient went to for the outcome type chosen from the drop down menu.   
 If you hover your mouse over a data point on the scatter plot on the left it will display that patient's data on the scatter plot on the right. 
 '''
+# markdown text - explanation to go above the anova section
 Anova_Text = ''' The table below gives the p-values from one-way ANOVA tests performed on the features for each group.  
 The null hypothesis was that the groups were not significantly different.  
 The alpha value for the test was 0.05.  
@@ -81,7 +84,7 @@ Values in pink in the table indicate cases where the groups being compared were 
 From this analysis it can be concluded that features where groups were significantly different (labeled in pink) would have the most impact on the outcome of the patients.  
 These factors were: normalized whole brain volume, education level, social economic status, sex, number of visits the patient attended, and age of the patient. 
 '''
-# make bargraphs of different factors
+# make bargraphs of different features
 barplot = make_subplots(rows=4,cols=2,horizontal_spacing=0.075,vertical_spacing=0.075,
                         subplot_titles=('Average Age',
                                         'Average Sex (M/F, 0 = Female, 1 = Male)',
@@ -121,7 +124,7 @@ barplot.update_yaxes(title_text = 'Average ASF', row=4,col=1)
 barplot.update_yaxes(title_text = 'Average Visits', row=4,col=2)
 barplot.update_yaxes(title_font=dict(size=17))
 barplot.update_xaxes(title_font=dict(size=17))
-# add figure title and format
+# format barplot
 barplot.update_layout(showlegend=False, height=1000)
 barplot.update_annotations({'font': {'size': 20}})
 
@@ -131,36 +134,41 @@ app.layout = html.Div(children=[
         html.H1('Dementia Prediction',style={'textAlign': 'center', 'color': '#503D36','font-size': 40}),
         # put the markdown text at the top left of the screen
         dcc.Markdown(children = intro_text,style={'textAlign': 'left', 'color': '#503D36','font-size': 25}),
-        # plot the bar plot
-        html.H2('Comparison of Features Between Groups',style={'textAlign': 'left', 'color': '#503D36','font-size': 30}),
-        dcc.Markdown(children = bargraph_text,style={'textAlign': 'left', 'color': '#503D36','font-size': 25}),
-        dcc.Graph(id='Group_of_BarPlots',figure=barplot),
-        # insert a break
-        html.Br(),
-        # make the drop down menus side by side
+
+        html.Div([                                                                              # bar plot
+                # give bar plot section a title 
+                html.H2('Comparison of Features Between Groups',style={'textAlign': 'left', 'color': '#503D36','font-size': 30}),
+                # call barplot markdown 
+                dcc.Markdown(children = bargraph_text,style={'textAlign': 'left', 'color': '#503D36','font-size': 25}),
+                # graph barplot
+                dcc.Graph(id='Group_of_BarPlots',figure=barplot),
+        ])
+
+        # give the scatter plot interactive section a title
         html.H2('In-depth Exploration of Features for Patient Outcome Types',style={'textAlign': 'left', 'color': '#503D36','font-size': 30}),
+        # call the scatterplot markdown
         dcc.Markdown(children = scatterplot_text,style={'textAlign': 'left', 'color': '#503D36','font-size': 25}),
-        html.Div(className = "row", children=[
+        html.Div(className = "row", children=[                                                  # drop down menus
                 html.Div([
                         # make a drop down menu to choose the dementia classication mode
                         html.H2("Patient Outcome Classification Type",style={'textAlign': 'left', 'color': '#503D36','font-size': 30}),
                         dcc.Dropdown(id='site-dropdown',
-                                options=[
+                                options=[                                                       # set the options for the dropdown
                                         {'label': 'Clinical Dementia Ratio', 'value': 'CDR'},
                                         {'label': 'Mini Mental Stat Examination Score', 'value': 'MMSE'},
                                         {'label': 'Group', 'value': 'Group'},
                                         ],
                                 style={'color': '#503D36','font-size': 25},
                                 value='ALL',
-                                placeholder="Select Patient Outcome Classification Type",
-                                searchable=True,
-                                )], style=dict(width='50%')
+                                placeholder="Select Patient Outcome Classification Type",       # give the dropdown a placeholder
+                                searchable=True,                                                # allow the user to search the dropdown
+                                )], style=dict(width='50%')                                     # make drop down take up 50% of screen
                 ),
                 html.Div([
-                        # make a drop down menu to choose the Factor of interest 
+                        # make a drop down menu to choose the Feature of interest 
                         html.H2("Feature of Interest",style={'textAlign': 'left', 'color': '#503D36','font-size': 30}),
                         dcc.Dropdown(id='site-dropdown2',
-                                options=[
+                                options=[                                                       # set the options for the dropdown
                                         {'label': 'Age', 'value': 'Age'},
                                         {'label': 'Sex', 'value': 'M/F'},
                                         {'label': 'Social Economic Status', 'value': 'SES'},
@@ -171,29 +179,30 @@ app.layout = html.Div(children=[
                                 ],
                                 style={'color': '#503D36','font-size': 25},
                                 value='ALL',
-                                placeholder="Select Feature of Interest",
-                                searchable=True,
-                                )],style=dict(width='50%')
+                                placeholder="Select Feature of Interest",                       # give the dropdown a placeholder
+                                searchable=True,                                                # allow the user to search the dropdown 
+                                )],style=dict(width='50%')                                      # make drop down take up 50% of screen
                         ),
-                ], style=dict(display='flex')),
-        html.Div([
+                ], style=dict(display='flex')),                                                 # put drop downs side by side 
+        html.Div([                                                                              # input the scatter plots
                 html.Div([
                         # make a scatter plot
                         dcc.Graph(id='scatter-chart', hoverData={'points':[{'customdata':'OAS2_0002'}]}),
-                ], style=dict(width='50%')),
+                ], style=dict(width='50%')),                                                    # make scatter plot take up 50% of screen
                 html.Div([
-                        # make a scatter plot
+                        # make the second scatter plot
                         dcc.Graph(id='sub-graph'),
-                ], style=dict(width='50%')),
-        ], style=dict(display='flex')),
+                ], style=dict(width='50%')),                                                    # make scatter plot take up 50% of screen
+        ], style=dict(display='flex')),                                                         # put the scatter plots side by side
         
-        html.Div([
-                # make a table with ANOVA results
+        html.Div([                                                                              # Anova table
                 html.H2("Table of P-Values from One-Way ANOVA Tests",style={'textAlign': 'left', 'color': '#503D36','font-size': 30}),
+                # call markdown explaining anova results
                 dcc.Markdown(children = Anova_Text,style={'textAlign': 'left', 'color': '#503D36','font-size': 25}),
+                # make a table with ANOVA results
                 dash_table.DataTable(Anova_pVal.to_dict('records'),
-                                     style_cell={'font_size':20},
-                                     style_data_conditional=[
+                                     style_cell={'font_size':20},                               # change the font of the anova table
+                                     style_data_conditional=[                                   # make the cells with alpha<0.5 pink
                                         {'if':{'filter_query':'{Age}<0.05', 'column_id':'Age'},'backgroundColor':'pink'},
                                         {'if':{'filter_query':'{Visit}<0.05', 'column_id':'Visit'},'backgroundColor':'pink'},
                                         {'if':{'filter_query':'{M/F}<0.05', 'column_id':'M/F'},'backgroundColor':'pink'},
@@ -206,42 +215,46 @@ app.layout = html.Div(children=[
         ])
 ])
 
-# make main scatter plot - inputs from two dropdown menus
+# create the callback and the function for the main scatter plot - inputs from two dropdown menus
 @app.callback(Output(component_id='scatter-chart', component_property='figure'),
-                Input(component_id='site-dropdown', component_property='value'),
-                Input(component_id='site-dropdown2', component_property='value'),
+                Input(component_id='site-dropdown', component_property='value'),                # get the outcome from the first dropdown menu
+                Input(component_id='site-dropdown2', component_property='value'),               # get the feature from the second dropdown menu
                 )
 def make_scatter_chart(site_dropdown_choice, site_dropdown2_choice):
-        graph_data = data_explore.where(data_explore['Visit'] == 1)
+        graph_data = data_explore.where(data_explore['Visit'] == 1)                             # only get the data from visit 1 of all the patients
         fig2 = px.scatter(graph_data, 
-                          x=graph_data.loc[:,site_dropdown2_choice], 
-                          y=graph_data.loc[:,site_dropdown_choice], 
-                          hover_name=graph_data['Subject ID'] 
+                          x=graph_data.loc[:,site_dropdown2_choice],                            # make x the feature from the second drop down menu
+                          y=graph_data.loc[:,site_dropdown_choice],                             # make y the outcome from the first drop down menu 
+                          hover_name=graph_data['Subject ID']                                   # display the patient id when you hover over a data point
                           )
-        fig2.update_traces(customdata = data_explore.loc[:site_dropdown_choice]['Subject ID'])
-        fig2.update_yaxes(title_font=dict(size=17))
-        fig2.update_xaxes(title_font=dict(size=17))
+        fig2.update_traces(customdata = data_explore.loc[:site_dropdown_choice]['Subject ID'])  # assign subject id to customvariable
+        fig2.update_yaxes(title_font=dict(size=17))                                             # change the font size of the y axis
+        fig2.update_xaxes(title_font=dict(size=17))                                             # change the font size of the x axis
+        # assign a title to the graph and change the font size
         fig2.update_layout(title =f"{site_dropdown2_choice} vs. {site_dropdown_choice} for the Subject's First Visit",title_font=dict(size=20))
-        return fig2
+        return fig2                                                                             # return the figure
+
 #create other scatter plot that shows the details of one patient
 def create_subgraph(subgraph_Data, site_dropdown_choice,subject_id):
         fig3 = px.scatter(subgraph_Data, 
-                          x=subgraph_Data['Visit'], 
-                          y=subgraph_Data.loc[:,site_dropdown_choice]
+                          x=subgraph_Data['Visit'],                                             # assign the x axis to be the Visit
+                          y=subgraph_Data.loc[:,site_dropdown_choice]                           # assign the y axis to be the outcome chosen from the dirst dropdown menu
                           )
-        fig3.update_yaxes(title_font=dict(size=17))
-        fig3.update_xaxes(title_font=dict(size=17))
+        fig3.update_yaxes(title_font=dict(size=17))                                             # change the font size of the y axis
+        fig3.update_xaxes(title_font=dict(size=17))                                             # change the font size of the x axis
+        # assign a title to the graph and change the font size
         fig3.update_layout(title =f"Visit vs. {site_dropdown_choice} for Subject {subject_id}",title_font=dict(size=20))
-        return fig3  
+        return fig3                                                                             # return the figure 
+
 # create the callback and function that will update the second scatter plot
 @app.callback(Output(component_id='sub-graph', component_property='figure'),
-                Input(component_id='scatter-chart', component_property='hoverData'),
-                Input(component_id='site-dropdown', component_property='value'),
+                Input(component_id='scatter-chart', component_property='hoverData'),            # get the patient the user hovers over from the first graph
+                Input(component_id='site-dropdown', component_property='value'),                # get the outcome from the first dropdown menu
                 )
 def update_subgraph(hoverData, site_dropdown_choice):
-    subject_id = hoverData['points'][0]['customdata']
-    subgraph_Data = data_explore.where(data_explore['Subject ID']==subject_id)
-    return create_subgraph(subgraph_Data,site_dropdown_choice,subject_id)
+    subject_id = hoverData['points'][0]['customdata']                                           # get the subject id from what point the user hovers over
+    subgraph_Data = data_explore.where(data_explore['Subject ID']==subject_id)                  # get the data for only that subject 
+    return create_subgraph(subgraph_Data,site_dropdown_choice,subject_id)                       # return the subgraph function that was created earlier
 
 # Run the app
 if __name__ == '__main__':
