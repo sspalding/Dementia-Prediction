@@ -15,7 +15,6 @@ from dash import dash_table
 import pickle
 import numpy as np
 from sklearn import preprocessing
-import dash_bootstrap_components as dbc
 
 # get the data from the database
 conn = sqlite3.connect("Dementia.db")                           # connect to the database
@@ -250,27 +249,43 @@ app.layout = html.Div([
                         html.Div([                                                                              # Machine Learning Model interactive tool
                                 html.H2("Machine Learning Model Interactive Tool",style={'textAlign': 'left', 'color': '#503D36','font-size': 30}),
                                 # call markdown explaining the tool
-                                dcc.Markdown(children = ML_text,style={'textAlign': 'left', 'color': '#503D36','font-size': 25}),
+                                dcc.Markdown(children = ML_text,style={'textAlign': 'left', 'color': '#503D36','font-size': 20}),
                                 # have the user input the subject information
-                                html.Div([html.Label('Sex of the Patient: ',style={'font-size':25}),
+                                html.Div([html.P('Sex of the Patient: ',style={'font-size':20}),
                                         dcc.Dropdown(id='site-dropdown-sex',options=[{'label': 'Male', 'value': 1},
                                                                                      {'label': 'Female', 'value': 0},],
-                                                     style={'font-size': 20},value='ALL',placeholder="Select Sex of Patient",searchable=True,)]),
-                                html.Div([html.Label('Number of Visits the Patient Attended: ',style={'font-size':25}),
-                                        dcc.Input(id='U_visit',type="number",placeholder="Between 1 and 5", min=1, max=5,style={'font-size':20}),]),
-                                html.Div([html.Label('Age of the Patient: ',style={'font-size':25}),
-                                        dcc.Input(id='U_Age',type="number",placeholder="Years", min=1, max=120, style={'font-size':20}),]),
-                                html.Div([html.Label('Social Economic Status of the Patient: ',style={'font-size':25}),
-                                        dcc.Input(id='U_SES', type="number", placeholder="Between 1 and 5", min=1, max=5, style={'font-size':20}),]),
-                                html.Div([html.Label('Education Level of the Patient: ',style={'font-size':25}),
-                                        dcc.Input(id='U_EDUC', type="number", placeholder="Below 23", min=0, max=23, style={'font-size':20}),]),
-                                html.Div([html.Label('Atlas Scaling Factor of the Patient',style={'font-size':25}),
-                                        dcc.Input(id='U_ASF', type="number", placeholder="Between 0 and 2", min=0, max=2, style={'font-size':20}),]),
-                                html.Div([html.Label('Estimated Total Intracranial Volume of the Patient: ',style={'font-size':25}),
-                                        dcc.Input(id='U_eTIV', type="number", placeholder="Between 0 and 3000", min=0, max=3000, style={'font-size':20}),]),
-                                html.Div([html.Label('Normalized Whole Brain Volume of the Patient: ',style={'font-size':25}),
-                                        dcc.Input(id='U_nWBV', type="number", placeholder="Between 0 and 1", min=0, max=1, style={'font-size':20}),]),
-                                html.Div([html.Button('Submit', id='submit-val', n_clicks=0, style={'font-size':20})]),
+                                                     style={'font-size': 20},value='ALL',placeholder="Select Sex of Patient",searchable=True,)
+                                ],style=dict(width=263)),
+                                html.Div([
+                                        html.P('Number of Visits the Patient Attended: ',style={'font-size':20}),
+                                        dcc.Input(id='U_visit',type="number",placeholder="Between 1 and 5", min=1, max=5,style={'font-size':20})
+                                ]),
+                                html.Div([
+                                        html.P('Age of the Patient: ',style={'font-size':20}),
+                                        dcc.Input(id='U_Age',type="number",placeholder="Years", min=1, max=120, style={'font-size':20})
+                                ]),
+                                html.Div([
+                                        html.P('Social Economic Status of the Patient: ',style={'font-size':20}),
+                                        dcc.Input(id='U_SES', type="number", placeholder="Between 1 and 5", min=1, max=5, style={'font-size':20})
+                                ]),
+                                html.Div([
+                                        html.P('Education Level of the Patient: ',style={'font-size':20}),
+                                        dcc.Input(id='U_EDUC', type="number", placeholder="Below 23", min=0, max=23, style={'font-size':20})
+                                ]),
+                                html.Div([
+                                        html.P('Atlas Scaling Factor of the Patient',style={'font-size':20}),
+                                        dcc.Input(id='U_ASF', type="number", placeholder="Between 0 and 2", min=0, max=2, style={'font-size':20})
+                                ]),
+                                html.Div([
+                                        html.P('Estimated Total Intracranial Volume of the Patient: ',style={'font-size':20}),
+                                        dcc.Input(id='U_eTIV', type="number", placeholder="Between 0 and 3000", min=0, max=3000, style={'font-size':20})
+                                ]),
+                                html.Div([
+                                        html.P('Normalized Whole Brain Volume of the Patient: ',style={'font-size':20}),
+                                        dcc.Input(id='U_nWBV', type="number", placeholder="Between 0 and 1", min=0, max=1, style={'font-size':20})
+                                ]),
+                                html.Br(),
+                                html.Div([html.Button('Submit', id='submit-val', n_clicks=0, style={'font-size':25})]),
 
                                 # output to user the predicted subject group
                                 html.Div([html.Div(id='Prediction',style={'font-size':25})])
