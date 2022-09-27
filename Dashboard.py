@@ -15,6 +15,7 @@ from dash import dash_table
 import pickle
 import numpy as np
 from sklearn import preprocessing
+import gunicorn
 
 # get the data from the database
 conn = sqlite3.connect("Dementia.db")                           # connect to the database
@@ -37,7 +38,7 @@ sc.fit(X)
 # Create a dash application
 app = dash.Dash(__name__)
 app.title = 'Dementia Prediction'
-
+server = app.server 
 # markdown text - beginning information
 intro_text = ''' Sarah Spalding   
 

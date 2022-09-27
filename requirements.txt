@@ -1,0 +1,6 @@
+dash
+pandas
+gunicorn
+plotly-express
+numpy
+sklearn
