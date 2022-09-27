@@ -36,11 +36,13 @@ sc = preprocessing.StandardScaler()
 sc.fit(X)
 
 # Create a dash application
-app = dash.Dash(__name__)
+app = dash.Dash(__name__, meta_tags=[{"name":"viewport","content":"width=device-width, initial-scale=1.0,maximim-scale=1.2,minimum-scale=0.5"}])
 app.title = 'Dementia Prediction'
 server = app.server 
+
+
 # markdown text - beginning information
-intro_text = ''' Sarah Spalding   
+intro_text = '''Sarah Spalding   
 
 The goal of this dashboard is to provide an exploration of the features in the Dementia Prediction dataset and their impact on patient outcome.   
 
@@ -106,7 +108,7 @@ Click for the complete analysis: [ANOVA Test](https://github.com/sspalding/Demen
 ML_text = ''' The machine learning model chosen was Support Vector Machine (SVM) model. Logistic regression, k nearest neighbors, \
         support vector machine, and decision tree models were compared and the SVM model was determined to be the one with the highest accuracy. \
         Click the link below to view the full analysis of these models and the specific parameters of the SVM model chosen.  
-        [Machine Learning Model Exploration](https://github.com/sspalding/Dementia-Prediction/blob/d0c888f2ee76d9f9862f3d1f8fd0779e988df73c/Machine%20Learning.ipynb)  
+        [Machine Learning Model](https://github.com/sspalding/Dementia-Prediction/blob/d0c888f2ee76d9f9862f3d1f8fd0779e988df73c/Machine%20Learning.ipynb)  
         **Instructions:**  
         - Fill out the following fields below.  
         - If a field has a red border then the value that has been entered is invalid. Ensure the value entered is a number in the correct range.  
@@ -156,17 +158,18 @@ barplot.update_yaxes(title_text = 'Average ASF', row=4,col=1)
 barplot.update_yaxes(title_text = 'Average Visits', row=4,col=2)
 barplot.update_yaxes(title_font=dict(size=17,color='#20283E'))
 barplot.update_xaxes(title_font=dict(size=17,color='#20283E'))
+barplot.update_yaxes(automargin=True)
+barplot.update_xaxes(automargin=True)
 barplot.update_annotations(font=dict(size=17,color='#20283E'))
 # format barplot
-barplot.update_layout(showlegend=False, height=1000, plot_bgcolor = '#DADADA')
+barplot.update_layout(showlegend=False,height=1000,width=1000, plot_bgcolor = '#DADADA')
 barplot.update_traces(marker_color=['#488A99','#DBAE58','#AC3E31'])
 
 # markdown style
 markdown_style = {'text-align':'left','color': '#20283E;','font-size':20,'backgroundColor': '#FFFFFF', 'padding':'5px'}
 # Tab format
-tabs_styles = {'height': '60px'}
-tab_style = {'borderTop': '1px solid #d6d6d6','borderBottom': '1px solid #d6d6d6','backgroundColor': '#DADADA','color':'#20283E','padding': '6px','fontWeight': 'bold','font-size': 20}
-tab_selected_style = {'borderTop': '1px solid #d6d6d6','borderBottom': '1px solid #d6d6d6','backgroundColor':  '#AC3E31','color': '#DADADA','padding': '6px','font-size': 20}
+tab_style = {'borderTop': '1px solid #d6d6d6','borderBottom': '1px solid #d6d6d6','backgroundColor': '#DADADA','color':'#20283E','padding': '1px','fontWeight': 'bold','font-size': 20}
+tab_selected_style = {'borderTop': '1px solid #d6d6d6','borderBottom': '1px solid #d6d6d6','backgroundColor':  '#AC3E31','color': '#DADADA','padding': '1px','font-size': 20}
 # input style
 input_style = {'font-size':15,'color':'#20283E','margin': '5px','padding': '5px'}
 
@@ -177,7 +180,7 @@ app.layout = html.Div([
         dcc.Tabs([
                 dcc.Tab(label='Overview',style=tab_style, selected_style=tab_selected_style, children=[
                         # put the markdown text at the top left of the screen
-                        html.H2('Overview of Project'),
+                        html.Div([html.H2('Overview of Project'),
                         dcc.Markdown(children = intro_text, style=markdown_style),
                         # bar plot
                         html.Div([                                                                              
@@ -186,8 +189,8 @@ app.layout = html.Div([
                                 # call barplot markdown 
                                 dcc.Markdown(children = bargraph_text, style=markdown_style),
                                 # graph barplot
-                                dcc.Graph(id='Group_of_BarPlots',figure=barplot),
-                        ]),
+                                dcc.Graph(id='Group_of_BarPlots',figure=barplot,responsive=False),
+                        ])]),
                 ]),
                 dcc.Tab(label='Interactive Comparison of Features', style=tab_style, selected_style=tab_selected_style, children=[
                         # give the scatter plot interactive section a title
@@ -247,7 +250,7 @@ app.layout = html.Div([
                                 dcc.Markdown(children = Anova_Text, style=markdown_style),
                                 # make a table with ANOVA results
                                 dash_table.DataTable(anova_pval.to_dict('records'),
-                                                     style_cell={'font_size':20},                               # change the font of the anova table
+                                                     style_cell={'font_size':20,'font_family':'times-new-roman'},                               # change the font of the anova table
                                                      style_data_conditional=[                                   # make the cells with alpha<0.5 #DBAE58
                                                         {'if':{'filter_query':'{Age}<0.05', 'column_id':'Age'},'backgroundColor':'#DBAE58'},
                                                         {'if':{'filter_query':'{Visit}<0.05', 'column_id':'Visit'},'backgroundColor':'#DBAE58'},
@@ -306,7 +309,7 @@ app.layout = html.Div([
                                 html.Div([html.Div(id='Prediction', style={'font-size':25,'color':'#20283E'})])
                                 ])
                 ])
-        ], style=tabs_styles)
+        ])
 ])
 
 # create the callback and the function for the main scatter plot - inputs from two dropdown menus
