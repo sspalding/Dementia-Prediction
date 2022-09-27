@@ -7,7 +7,7 @@ import sqlite3
 import dash
 from dash import html
 from dash import dcc
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import plotly.express as px
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
@@ -20,7 +20,10 @@ from sklearn import preprocessing
 conn = sqlite3.connect("Dementia.db")                           # connect to the database
 query = 'SELECT * FROM Data_Wrangled'                   
 data_explore = pd.read_sql(query, conn)                         # this will be the main dataframe used for the dashboard
-Anova_pVal = pd.read_sql('select * from P_Values', conn)        # dataframe of ANOVA P-values calculated in exploratory data analysis
+anova_pval = pd.read_sql('select * from P_Values', conn)        # dataframe of ANOVA P-values calculated in exploratory data analysis
+
+# round anova values to four decimal places
+anova_pval = anova_pval.round(4)
 
 # load ML model
 with open('svm_model.pickle', 'rb') as f:
@@ -33,6 +36,7 @@ sc.fit(X)
 
 # Create a dash application
 app = dash.Dash(__name__)
+app.title = 'Dementia Prediction'
 
 # markdown text - beginning information
 intro_text = ''' Sarah Spalding   
@@ -94,7 +98,8 @@ The alpha value for the test was 0.05.
 A p-value less than alpha indicated that the null hypothesis should be rejected, therefore signifying the groups being compared were significantly different.  
 Values in pink in the table indicate cases where the groups being compared were significantly different.  
 From this analysis it can be concluded that features where groups were significantly different (labeled in pink) would have the most impact on the outcome of the patients.  
-These factors were: normalized whole brain volume, education level, social economic status, sex, number of visits the patient attended, and age of the patient. 
+These factors were: normalized whole brain volume, education level, social economic status, sex, number of visits the patient attended, and age of the patient.   
+Click for the complete analysis: [ANOVA Test](https://github.com/sspalding/Dementia-Prediction/blob/c2773a763b14b496acd9cb123d1fdbe72b8db8a8/Exploratory%20Data%20Analysis.ipynb)
 '''
 # markdown text - explanation of machine learning model tool
 ML_text = ''' The machine learning model chosen was Support Vector Machine (SVM) model. Logistic regression, k nearest neighbors, \
@@ -148,46 +153,56 @@ barplot.update_yaxes(title_text = 'Average eTIV', row=3,col=1)
 barplot.update_yaxes(title_text = 'Average nWBV', row=3,col=2)
 barplot.update_yaxes(title_text = 'Average ASF', row=4,col=1)
 barplot.update_yaxes(title_text = 'Average Visits', row=4,col=2)
-barplot.update_yaxes(title_font=dict(size=17))
-barplot.update_xaxes(title_font=dict(size=17))
+barplot.update_yaxes(title_font=dict(size=17,color='#20283E'))
+barplot.update_xaxes(title_font=dict(size=17,color='#20283E'))
+barplot.update_annotations(font=dict(size=17,color='#20283E'))
 # format barplot
-barplot.update_layout(showlegend=False, height=1000)
-barplot.update_annotations({'font': {'size': 20}})
+barplot.update_layout(showlegend=False, height=1000, plot_bgcolor = '#DADADA')
+barplot.update_traces(marker_color=['#488A99','#DBAE58','#AC3E31'])
+
+# markdown style
+markdown_style = {'text-align':'left','color': '#20283E;','font-size':20,'backgroundColor': '#FFFFFF', 'padding':'5px'}
+# Tab format
+tabs_styles = {'height': '60px'}
+tab_style = {'borderTop': '1px solid #d6d6d6','borderBottom': '1px solid #d6d6d6','backgroundColor': '#DADADA','color':'#20283E','padding': '6px','fontWeight': 'bold','font-size': 20}
+tab_selected_style = {'borderTop': '1px solid #d6d6d6','borderBottom': '1px solid #d6d6d6','backgroundColor':  '#AC3E31','color': '#DADADA','padding': '6px','font-size': 20}
+# input style
+input_style = {'font-size':15,'color':'#20283E','margin': '5px','padding': '5px'}
 
 # Create an app layout
 app.layout = html.Div([
         # make title
-        html.H1('Dementia Prediction',style={'textAlign': 'center', 'color': '#503D36','font-size': 40}),
+        html.H1('Dementia Prediction'),
         dcc.Tabs([
-                dcc.Tab(label='Overview', style={'font-size':20}, children=[
+                dcc.Tab(label='Overview',style=tab_style, selected_style=tab_selected_style, children=[
                         # put the markdown text at the top left of the screen
-                        dcc.Markdown(children = intro_text,style={'textAlign': 'left', 'color': '#503D36','font-size': 25}),
+                        html.H2('Overview of Project'),
+                        dcc.Markdown(children = intro_text, style=markdown_style),
                         # bar plot
                         html.Div([                                                                              
                                 # give bar plot section a title 
-                                html.H2('Comparison of Features Between Groups',style={'textAlign': 'left', 'color': '#503D36','font-size': 30}),
+                                html.H2('Comparison of Features Between Groups'),
                                 # call barplot markdown 
-                                dcc.Markdown(children = bargraph_text,style={'textAlign': 'left', 'color': '#503D36','font-size': 25}),
+                                dcc.Markdown(children = bargraph_text, style=markdown_style),
                                 # graph barplot
                                 dcc.Graph(id='Group_of_BarPlots',figure=barplot),
                         ]),
                 ]),
-                dcc.Tab(label='Interactive Comparison of Features', style={'font-size':20}, children=[
+                dcc.Tab(label='Interactive Comparison of Features', style=tab_style, selected_style=tab_selected_style, children=[
                         # give the scatter plot interactive section a title
-                        html.H2('In-depth Exploration of Features for Patient Outcome Types',style={'textAlign': 'left', 'color': '#503D36','font-size': 30}),
+                        html.H2('In-depth Exploration of Features for Patient Outcome Types'),
                         # call the scatterplot markdown
-                        dcc.Markdown(children = scatterplot_text,style={'textAlign': 'left', 'color': '#503D36','font-size': 25}),
+                        dcc.Markdown(children = scatterplot_text, style=markdown_style),
                         html.Div(className = "row", children=[                                                  # drop down menus
                                 html.Div([
                                         # make a drop down menu to choose the dementia classication mode
-                                        html.H2("Patient Outcome Classification Type",style={'textAlign': 'left', 'color': '#503D36','font-size': 30}),
+                                        html.P("Patient Outcome Classification Type:"),
                                         dcc.Dropdown(id='site-dropdown',
                                                 options=[                                                       # set the options for the dropdown
                                                         {'label': 'Clinical Dementia Ratio', 'value': 'CDR'},
                                                         {'label': 'Mini Mental Stat Examination Score', 'value': 'MMSE'},
                                                         {'label': 'Group', 'value': 'Group'},
                                                         ],
-                                                style={'color': '#503D36','font-size': 25},
                                                 value='ALL',
                                                 placeholder="Select Patient Outcome Classification Type",       # give the dropdown a placeholder
                                                 searchable=True,                                                # allow the user to search the dropdown
@@ -195,7 +210,7 @@ app.layout = html.Div([
                                 ),
                                 html.Div([
                                         # make a drop down menu to choose the Feature of interest 
-                                        html.H2("Feature of Interest",style={'textAlign': 'left', 'color': '#503D36','font-size': 30}),
+                                        html.P("Feature of Interest:"),
                                         dcc.Dropdown(id='site-dropdown2',
                                                 options=[                                                       # set the options for the dropdown
                                                         {'label': 'Age', 'value': 'Age'},
@@ -206,7 +221,6 @@ app.layout = html.Div([
                                                         {'label': 'Normalized Whole Brain Volume', 'value': 'nWBV'},
                                                         {'label': 'Atlas Scaling Factor', 'value': 'ASF'},
                                                 ],
-                                                style={'color': '#503D36','font-size': 25},
                                                 value='ALL',
                                                 placeholder="Select Feature of Interest",                       # give the dropdown a placeholder
                                                 searchable=True,                                                # allow the user to search the dropdown 
@@ -225,73 +239,73 @@ app.layout = html.Div([
                         ], style=dict(display='flex')),                                                         # put the scatter plots side by side
 
                 ]),
-                dcc.Tab(label='ANOVA Test Results', style={'font-size':20}, children=[
+                dcc.Tab(label='ANOVA Test Results', style=tab_style, selected_style=tab_selected_style, children=[
                         html.Div([                                                                              # Anova table
-                                html.H2("Table of P-Values from One-Way ANOVA Tests",style={'textAlign': 'left', 'color': '#503D36','font-size': 30}),
+                                html.H2("Table of P-Values from One-Way ANOVA Tests"),
                                 # call markdown explaining anova results
-                                dcc.Markdown(children = Anova_Text,style={'textAlign': 'left', 'color': '#503D36','font-size': 25}),
+                                dcc.Markdown(children = Anova_Text, style=markdown_style),
                                 # make a table with ANOVA results
-                                dash_table.DataTable(Anova_pVal.to_dict('records'),
+                                dash_table.DataTable(anova_pval.to_dict('records'),
                                                      style_cell={'font_size':20},                               # change the font of the anova table
-                                                     style_data_conditional=[                                   # make the cells with alpha<0.5 pink
-                                                        {'if':{'filter_query':'{Age}<0.05', 'column_id':'Age'},'backgroundColor':'pink'},
-                                                        {'if':{'filter_query':'{Visit}<0.05', 'column_id':'Visit'},'backgroundColor':'pink'},
-                                                        {'if':{'filter_query':'{M/F}<0.05', 'column_id':'M/F'},'backgroundColor':'pink'},
-                                                        {'if':{'filter_query':'{SES}<0.05', 'column_id':'SES'},'backgroundColor':'pink'},
-                                                        {'if':{'filter_query':'{EDUC}<0.05', 'column_id':'EDUC'},'backgroundColor':'pink'},
-                                                        {'if':{'filter_query':'{ASF}<0.05', 'column_id':'ASF'},'backgroundColor':'pink'},
-                                                        {'if':{'filter_query':'{eTIV}<0.05', 'column_id':'eTIV'},'backgroundColor':'pink'},
-                                                        {'if':{'filter_query':'{nWBV}<0.05', 'column_id':'nWBV'},'backgroundColor':'pink'},
+                                                     style_data_conditional=[                                   # make the cells with alpha<0.5 #DBAE58
+                                                        {'if':{'filter_query':'{Age}<0.05', 'column_id':'Age'},'backgroundColor':'#DBAE58'},
+                                                        {'if':{'filter_query':'{Visit}<0.05', 'column_id':'Visit'},'backgroundColor':'#DBAE58'},
+                                                        {'if':{'filter_query':'{M/F}<0.05', 'column_id':'M/F'},'backgroundColor':'#DBAE58'},
+                                                        {'if':{'filter_query':'{SES}<0.05', 'column_id':'SES'},'backgroundColor':'#DBAE58'},
+                                                        {'if':{'filter_query':'{EDUC}<0.05', 'column_id':'EDUC'},'backgroundColor':'#DBAE58'},
+                                                        {'if':{'filter_query':'{ASF}<0.05', 'column_id':'ASF'},'backgroundColor':'#DBAE58'},
+                                                        {'if':{'filter_query':'{eTIV}<0.05', 'column_id':'eTIV'},'backgroundColor':'#DBAE58'},
+                                                        {'if':{'filter_query':'{nWBV}<0.05', 'column_id':'nWBV'},'backgroundColor':'#DBAE58'},
                                                         ])
                         ]),
                 ]),
-                dcc.Tab(label='Machine Learning Model', style={'font-size':20}, children=[
+                dcc.Tab(label='Machine Learning Model', style=tab_style, selected_style=tab_selected_style, children=[
                         html.Div([                                                                              # Machine Learning Model interactive tool
-                                html.H2("Machine Learning Model Interactive Tool",style={'textAlign': 'left', 'color': '#503D36','font-size': 30}),
+                                html.H2("Machine Learning Model Interactive Tool"),
                                 # call markdown explaining the tool
-                                dcc.Markdown(children = ML_text,style={'textAlign': 'left', 'color': '#503D36','font-size': 20}),
+                                dcc.Markdown(children = ML_text, style=markdown_style),
                                 # have the user input the subject information
-                                html.Div([html.P('Sex of the Patient: ',style={'font-size':20}),
+                                html.Div([html.P('Sex of the Patient: '),
                                         dcc.Dropdown(id='site-dropdown-sex',options=[{'label': 'Male', 'value': 1},
                                                                                      {'label': 'Female', 'value': 0},],
-                                                     style={'font-size': 20},value='ALL',placeholder="Select Sex of Patient",searchable=True,)
+                                                     value='ALL',placeholder="Select Sex of Patient",searchable=True,)
                                 ],style=dict(width=263)),
                                 html.Div([
-                                        html.P('Number of Visits the Patient Attended: ',style={'font-size':20}),
-                                        dcc.Input(id='U_visit',type="number",placeholder="Between 1 and 5", min=1, max=5,style={'font-size':20})
+                                        html.P('Number of Visits the Patient Attended: '),
+                                        dcc.Input(id='U_visit',type="number",placeholder="Between 1 and 5", min=1, max=5, style=input_style)
                                 ]),
                                 html.Div([
-                                        html.P('Age of the Patient: ',style={'font-size':20}),
-                                        dcc.Input(id='U_Age',type="number",placeholder="Years", min=1, max=120, style={'font-size':20})
+                                        html.P('Age of the Patient: '),
+                                        dcc.Input(id='U_Age',type="number",placeholder="Years", min=1, max=120, style=input_style)
                                 ]),
                                 html.Div([
-                                        html.P('Social Economic Status of the Patient: ',style={'font-size':20}),
-                                        dcc.Input(id='U_SES', type="number", placeholder="Between 1 and 5", min=1, max=5, style={'font-size':20})
+                                        html.P('Social Economic Status of the Patient: '),
+                                        dcc.Input(id='U_SES', type="number", placeholder="Between 1 and 5", min=1, max=5, style=input_style)
                                 ]),
                                 html.Div([
-                                        html.P('Education Level of the Patient: ',style={'font-size':20}),
-                                        dcc.Input(id='U_EDUC', type="number", placeholder="Below 23", min=0, max=23, style={'font-size':20})
+                                        html.P('Education Level of the Patient: '),
+                                        dcc.Input(id='U_EDUC', type="number", placeholder="Below 23", min=0, max=23, style=input_style)
                                 ]),
                                 html.Div([
-                                        html.P('Atlas Scaling Factor of the Patient',style={'font-size':20}),
-                                        dcc.Input(id='U_ASF', type="number", placeholder="Between 0 and 2", min=0, max=2, style={'font-size':20})
+                                        html.P('Atlas Scaling Factor of the Patient'),
+                                        dcc.Input(id='U_ASF', type="number", placeholder="Between 0 and 2", min=0, max=2, style=input_style)
                                 ]),
                                 html.Div([
-                                        html.P('Estimated Total Intracranial Volume of the Patient: ',style={'font-size':20}),
-                                        dcc.Input(id='U_eTIV', type="number", placeholder="Between 0 and 3000", min=0, max=3000, style={'font-size':20})
+                                        html.P('Estimated Total Intracranial Volume of the Patient: '),
+                                        dcc.Input(id='U_eTIV', type="number", placeholder="Between 0 and 3000", min=0, max=3000, style=input_style)
                                 ]),
                                 html.Div([
-                                        html.P('Normalized Whole Brain Volume of the Patient: ',style={'font-size':20}),
-                                        dcc.Input(id='U_nWBV', type="number", placeholder="Between 0 and 1", min=0, max=1, style={'font-size':20})
+                                        html.P('Normalized Whole Brain Volume of the Patient: '),
+                                        dcc.Input(id='U_nWBV', type="number", placeholder="Between 0 and 1", min=0, max=1, style=input_style)
                                 ]),
                                 html.Br(),
-                                html.Div([html.Button('Submit', id='submit-val', n_clicks=0, style={'font-size':25})]),
+                                html.Div([html.Button('Submit', id='submit-val', n_clicks=0)]),
 
                                 # output to user the predicted subject group
-                                html.Div([html.Div(id='Prediction',style={'font-size':25})])
+                                html.Div([html.Div(id='Prediction', style={'font-size':25,'color':'#20283E'})])
                                 ])
                 ])
-        ])
+        ], style=tabs_styles)
 ])
 
 # create the callback and the function for the main scatter plot - inputs from two dropdown menus
@@ -309,8 +323,12 @@ def make_scatter_chart(site_dropdown_choice, site_dropdown2_choice):
         fig2.update_traces(customdata = data_explore.loc[:site_dropdown_choice]['Subject ID'])  # assign subject id to customvariable
         fig2.update_yaxes(title_font=dict(size=17))                                             # change the font size of the y axis
         fig2.update_xaxes(title_font=dict(size=17))                                             # change the font size of the x axis
+        fig2.update_traces(marker_color = '#AC3E31')
+        fig2.update_layout(plot_bgcolor = '#DADADA')
+        fig2.update_yaxes(title_font=dict(size=17,color='#20283E'))
+        fig2.update_xaxes(title_font=dict(size=17,color='#20283E'))
         # assign a title to the graph and change the font size
-        fig2.update_layout(title =f"{site_dropdown2_choice} vs. {site_dropdown_choice} for the Subject's First Visit",title_font=dict(size=20))
+        fig2.update_layout(title =f"{site_dropdown2_choice} vs. {site_dropdown_choice} for the Subject's First Visit",title_font=dict(size=20, color='#20283E'))
         return fig2                                                                             # return the figure
 
 #create other scatter plot that shows the details of one patient
@@ -321,8 +339,12 @@ def create_subgraph(subgraph_Data, site_dropdown_choice,subject_id):
                           )
         fig3.update_yaxes(title_font=dict(size=17))                                             # change the font size of the y axis
         fig3.update_xaxes(title_font=dict(size=17))                                             # change the font size of the x axis
+        fig3.update_traces(marker_color = '#488A99', marker_size = 10)
+        fig3.update_layout(plot_bgcolor = '#DADADA')
+        fig3.update_yaxes(title_font=dict(size=17,color='#20283E'))
+        fig3.update_xaxes(title_font=dict(size=17,color='#20283E'))
         # assign a title to the graph and change the font size
-        fig3.update_layout(title =f"Visit vs. {site_dropdown_choice} for Subject {subject_id}",title_font=dict(size=20))
+        fig3.update_layout(title =f"Visit vs. {site_dropdown_choice} for Subject {subject_id}",title_font=dict(size=20, color='#20283E'))
         return fig3                                                                             # return the figure 
 
 # create the callback and function that will update the second scatter plot
@@ -338,24 +360,21 @@ def update_subgraph(hoverData, site_dropdown_choice):
 # create the callback function for the machine learning model
 @app.callback(Output(component_id='Prediction', component_property='children'),
                 Input(component_id='submit-val',component_property='n_clicks'),
-                Input(component_id='U_visit', component_property='value'),
-                Input(component_id='U_Age', component_property='value'),
-                Input(component_id='site-dropdown-sex', component_property='value'),
-                Input(component_id='U_SES', component_property='value'),
-                Input(component_id='U_EDUC', component_property='value'),
-                Input(component_id='U_ASF', component_property='value'),
-                Input(component_id='U_eTIV', component_property='value'),
-                Input(component_id='U_nWBV', component_property='value'),
+                State(component_id='U_visit', component_property='value'),
+                State(component_id='U_Age', component_property='value'),
+                State(component_id='site-dropdown-sex', component_property='value'),
+                State(component_id='U_SES', component_property='value'),
+                State(component_id='U_EDUC', component_property='value'),
+                State(component_id='U_ASF', component_property='value'),
+                State(component_id='U_eTIV', component_property='value'),
+                State(component_id='U_nWBV', component_property='value'),
         )
 # create a function to run the machine learning model using the user input
 def run_model(n_clicks,visit,age,sex,SES,EDUC,ASF,eTIV,nWBV):
-        prev_nclicks = 0                                                                        # set previous number of button clicks to 0
-        if n_clicks > prev_nclicks:                                                             # if the submit button is clicked run the model
-                user_input = np.array([[visit, sex, age, EDUC, SES, eTIV, nWBV,  ASF]])         # create an array of the user input
-                user_input = sc.transform(user_input)                                           # normalize that array based on the training data
-                prediction = svm_model.predict(user_input)                                      # run the model to get a prediction
-                prev_nclicks = n_clicks                                                         # set the previous number of clicks to the current number of clicks
-                return f'Prediction: {prediction}'                                              # return the model
+        user_input = np.array([[visit, sex, age, EDUC, SES, eTIV, nWBV,  ASF]])         # create an array of the user input
+        user_input = sc.transform(user_input)                                           # normalize that array based on the training data
+        prediction = svm_model.predict(user_input)                                      # run the model to get a prediction                                                     # set the previous number of clicks to the current number of clicks
+        return f'Prediction: {prediction}'                                              # return the model
 
 # Run the app
 if __name__ == '__main__':
