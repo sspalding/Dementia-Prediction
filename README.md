@@ -1,4 +1,5 @@
-# Dementia-Prediction
+# Dementia-Prediction  
+[Dashboard](https://dementia-prediction.herokuapp.com/)  
 Project to examine dataset of dementia patients and predict likelihood of dementia in future patients
 What questions are we trying to answer from this dataset:
 - What factors have the strongest affect on the group the patients are in?
@@ -17,5 +18,5 @@ Inputs:
 Outcomes:
 - Group
 - MMSE
-- CDR
-In the machine learning model we will (probably) just be looking at the group
+- CDR  
+The dataset is from kaggle.com [Dataset](https://www.kaggle.com/datasets/shashwatwork/dementia-prediction-dataset)
