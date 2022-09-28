@@ -34,7 +34,7 @@ Patient Outcome Classification Type:
     - Nondemented: Classified as Not Having Dementia  
     - Converted: Classified as Developed Dementia During the Time of the Study  
 
-## Data Mining and Wrangling:
+## Data Collection and Wrangling:
 Data collection and wrangling is the first and arguably most important step in the data analysis process as it sets the stage for the rest of the project. The data for this project came from [Kaggle](https://www.kaggle.com/datasets/shashwatwork/dementia-prediction-dataset). The csv file was read in using the Pandas library and was stored in a local database using sqlite3. Storing the data in a database as such will allow for the easy access and storing of datatables across multiple files. The dataset did have some null values, these were replaced with the average value of that column. One hot encoding was used to convert the sex variable from categorical to continous. All of the patients in the trial were right handed so the hand column was deleted. The wrangled data was stored in the database as a new table to be accessed by other programs.  
 Click [here](https://github.com/sspalding/Dementia-Prediction/blob/3f3d47b89e72999dbad910962c7b3988e9ae9133/DataCollection%20and%20Wrangling.ipynb) to view the full data mining and wrangling process.  
 
@@ -51,6 +51,16 @@ Click [here](https://github.com/sspalding/Dementia-Prediction/blob/d0c888f2ee76d
 ## Reporting Results:
 Reporting the results of the analysis is essential to the data analysis process. It is incredibly important to provide results to the audience in a accessible format. A dashboard was made using Plotly Dash. The [dashboard](https://dementia-prediction.herokuapp.com/) shows an overview of the project, an interactive comparison of features, the ANOVA test results, and an interactive machine learning model. The dashboard aims to provide users with a deeper understanding of the features influence on patient outcome as well as a tool to predict the outcome of a new patient.  
 Click [here](https://github.com/sspalding/Dementia-Prediction/blob/3f3d47b89e72999dbad910962c7b3988e9ae9133/app.py) to view the code behind the dashboard.  
+
+## Build Instructions  
+1. Download the dataset from [kaggle.com](https://www.kaggle.com/datasets/shashwatwork/dementia-prediction-dataset)  
+2. CLone the main branch of this repository  
+3. Ensure the program files and dataset are saved to the same directory  
+4. Run the program files in the following order: 
+    1. DataCollection and Wrangling.ipynb
+    2. Exploratory Data Analysis.ipynb
+    3. Machine Learning.ipynb
+    4. App.py
 
 ## References:
 The dataset is from [kaggle.com](https://www.kaggle.com/datasets/shashwatwork/dementia-prediction-dataset)     
