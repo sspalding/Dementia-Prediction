@@ -159,7 +159,7 @@ formatBarplots(visit_fig, 'Number of Visits')
 # markdown style
 markdown_style = {'text-align':'left','color': '#20283E;','font-size':20,'backgroundColor': '#FFFFFF', 'padding':'5px'}
 # Tab format
-tab_style = {'borderTop': '1px solid #d6d6d6','borderBottom': '1px solid #d6d6d6','backgroundColor': '#DADADA','color':'#20283E','padding': '1px','fontWeight': 'bold','font-size': 20}
+tab_style = {'borderTop': '1px solid #d6d6d6','borderBottom': '1px solid #d6d6d6','backgroundColor': '#DADADA','color':'#20283E','padding': '1px','font-size': 20}
 tab_selected_style = {'borderTop': '1px solid #d6d6d6','borderBottom': '1px solid #d6d6d6','backgroundColor':  '#AC3E31','color': '#DADADA','padding': '1px','font-size': 20}
 # input style
 input_style = {'font-size':15,'color':'#20283E','margin': '5px','padding': '5px'}
