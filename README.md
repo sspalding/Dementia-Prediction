@@ -6,6 +6,7 @@ The goal of this project was to examine a dataset of patients with and without d
 Features:
 - SES: Social Economic Status  
 - EDUC: Education Level  
+- MR Delay: Magnetic Resonance Delay
 - eTIV: Estimated Total Intracranial Volume  
 - nWBV: Normalized Whole Brain Volume  
 - ASF: Atlas Scaling Factor  
