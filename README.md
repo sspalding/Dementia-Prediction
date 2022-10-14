@@ -48,7 +48,7 @@ The inputs for the machine learning models were Sex, Educ, SES, and nWBV. The ot
 Click [here](https://github.com/sspalding/Dementia-Prediction/blob/d0c888f2ee76d9f9862f3d1f8fd0779e988df73c/Machine%20Learning.ipynb) to view the full machine learning model analysis. 
 
 ## Reporting Results:
-Reporting the results of the analysis is essential to the data analysis process. It is incredibly important to provide results to the audience in a accessible format. A dashboard was made using Plotly Dash. The [dashboard](https://dementia-prediction.herokuapp.com/) shows an overview of the project, an interactive comparison of features, the ANOVA test results, and an interactive machine learning model. The dashboard aims to provide users with a deeper understanding of the features influence on patient outcome as well as a tool to predict the outcome of a new patient.  
+Reporting the results of the analysis is essential to the data analysis process. It is incredibly important to provide results to the audience in a accessible format. A dashboard was made using Plotly Dash. The dashboard is deployed using a combination of git and heroku. The [dashboard](https://dementia-prediction.herokuapp.com/) shows an overview of the project, an interactive comparison of features, the ANOVA test results, and an interactive machine learning model. The dashboard aims to provide users with a deeper understanding of the features influence on patient outcome as well as a tool to predict the outcome of a new patient.  
 Click [here](https://github.com/sspalding/Dementia-Prediction/blob/3f3d47b89e72999dbad910962c7b3988e9ae9133/app.py) to view the code behind the dashboard.  
 
 ## Build Instructions  
