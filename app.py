@@ -187,17 +187,24 @@ app.layout = html.Div([
                                         dbc.Row([
                                                 dbc.Col(dcc.Graph(id='Age-Barplot',figure=age_fig)),
                                                 dbc.Col(dcc.Graph(id='Sex-Barplot',figure=sex_fig)),
-                                                dbc.Col(dcc.Graph(id='SES-Barplot',figure=ses_fig)),
+                                                
                                         ]),
                                         dbc.Row([
+                                                dbc.Col(dcc.Graph(id='SES-Barplot',figure=ses_fig)),
                                                 dbc.Col(dcc.Graph(id='EDUC-Barplot',figure=educ_fig)),
+                                        ]),
+                                        dbc.Row([
+                                                
                                                 dbc.Col(dcc.Graph(id='eTIV-Barplot',figure=etiv_fig)),
                                                 dbc.Col(dcc.Graph(id='nWBV-Barplot',figure=nwbv_fig))
                                         ]),
                                         dbc.Row([ 
                                                 dbc.Col(dcc.Graph(id='ASF-Barplot',figure=asf_fig)),
-                                                dbc.Col(dcc.Graph(id='Visit-Barplot',figure=visit_fig)),
-                                                dbc.Col(dcc.Graph(id='MRDelay-Barplot', figure=mrdelay_fig))
+                                                dbc.Col(dcc.Graph(id='Visit-Barplot',figure=visit_fig)),   
+                                        ]),
+                                        dbc.Row([
+                                                dbc.Col(dcc.Graph(id='MRDelay-Barplot', figure=mrdelay_fig)),
+                                                dbc.Col(),
                                         ]),
                                 ]),
                         ]),
