@@ -9,8 +9,6 @@ from dash import html
 from dash import dcc
 from dash.dependencies import Input, Output, State
 import plotly.express as px
-from plotly.subplots import make_subplots
-import plotly.graph_objects as go
 from dash import dash_table
 import pickle
 import numpy as np
@@ -31,7 +29,7 @@ with open('svm_model.pickle', 'rb') as f:
 anova_pval = anova_pval.round(4)
 
 # create normalization variable for machine 
-X = data_explore[['Visit','M/F','Age','EDUC','SES','eTIV','nWBV','ASF']].values
+X = data_explore[['M/F','EDUC','SES','nWBV']].values
 sc = preprocessing.StandardScaler()
 sc.fit(X)
 
@@ -50,6 +48,7 @@ The goal of this dashboard is to provide an exploration of the features in the D
 
 Features:
 - SES: Social Economic Status  
+- MR Delay: Magnetic Resonance Delay
 - EDUC: Education Level  
 - eTIV: Estimated Total Intracranial Volume  
 - nWBV: Normalized Whole Brain Volume  
@@ -77,7 +76,6 @@ Patient Outcome Classification Type:
 - Group: Overall Classification of the Patient  
     - Demented: Classified as Having Dementia
     - Nondemented: Classified as Not Having Dementia  
-    - Converted: Classified as Developed Dementia During the Time of the Study  
 
 [Link to dataset] (https://www.kaggle.com/datasets/shashwatwork/dementia-prediction-dataset)  
 [Link to Github] (https://github.com/sspalding/Dementia-Prediction)
@@ -102,13 +100,14 @@ The null hypothesis was that the groups were not significantly different.
 The alpha value for the test was 0.05.  
 A p-value less than alpha indicated that the null hypothesis should be rejected, therefore signifying the groups being compared were significantly different.  
 Values in pink in the table indicate cases where the groups being compared were significantly different.  
-From this analysis it can be concluded that features where groups were significantly different (labeled in pink) would have the most impact on the outcome of the patients.  
-These factors were: normalized whole brain volume, education level, social economic status, sex, number of visits the patient attended, and age of the patient.   
+From this analysis it can be concluded that features where groups were significantly different (labeled in Dark Yellow) would have the most impact on the outcome of the patients.    
+These factors were: normalized whole brain volume, education level, and sex of the patient.   
+Social Economic Status (SES) had a p-value less than 0.1 (labeled in yellow) indicating that the groups were very close to being significantly different.
 Click for the complete analysis: [ANOVA Test](https://github.com/sspalding/Dementia-Prediction/blob/c2773a763b14b496acd9cb123d1fdbe72b8db8a8/Exploratory%20Data%20Analysis.ipynb)
 '''
 # markdown text - explanation of machine learning model tool
 ML_text = ''' The machine learning model chosen was Support Vector Machine (SVM) model. Logistic regression, k nearest neighbors, \
-        support vector machine, and decision tree models were compared and the SVM model was determined to be the one with the highest accuracy. \
+        support vector machine, and decision tree models were compared and the SVM model was determined to be the one with the best performance. \
         Click the link below to view the full analysis of these models and the specific parameters of the SVM model chosen.  
         [Machine Learning Model](https://github.com/sspalding/Dementia-Prediction/blob/d0c888f2ee76d9f9862f3d1f8fd0779e988df73c/Machine%20Learning.ipynb)  
         **Instructions:**  
@@ -120,6 +119,7 @@ ML_text = ''' The machine learning model chosen was Support Vector Machine (SVM)
 # barplots
 # get the data for the barlots from our database
 barplots_data = pd.read_sql('select avg("Age") as "Avg_Age",\
+                            avg("MR Delay") as "Avg_MR_Delay",\
                             avg("M/F") as "Avg_Sex",\
                             avg("SES") as "Avg_SES",\
                             avg("EDUC") as "Avg_EDUC",\
@@ -130,6 +130,7 @@ barplots_data = pd.read_sql('select avg("Age") as "Avg_Age",\
                             "Group" from Data_Wrangled group by "Group"', conn) 
 # make bargraphs of different features
 age_fig = px.bar(barplots_data, x='Group',y='Avg_Age')
+mrdelay_fig = px.bar(barplots_data, x ='Group', y='Avg_MR_Delay')
 sex_fig = px.bar(barplots_data, x='Group',y='Avg_Sex')
 ses_fig = px.bar(barplots_data, x='Group',y='Avg_SES')
 educ_fig = px.bar(barplots_data, x='Group',y='Avg_EDUC')
@@ -147,6 +148,7 @@ def formatBarplots(figname,yaxis):
         return
 # call the format function for each bar plot
 formatBarplots(age_fig, 'Average Age (years)')
+formatBarplots(mrdelay_fig, 'MR Delay')
 formatBarplots(sex_fig, 'Sex (Male=1, Female=0)')
 formatBarplots(ses_fig, 'Social Economic Status')
 formatBarplots(educ_fig, 'Education Level')
@@ -184,19 +186,18 @@ app.layout = html.Div([
                                         # graph barplots, use dbc rows and columns to format
                                         dbc.Row([
                                                 dbc.Col(dcc.Graph(id='Age-Barplot',figure=age_fig)),
-                                                dbc.Col(dcc.Graph(id='Sex-Barplot',figure=sex_fig))
-                                        ]),
-                                        dbc.Row([
+                                                dbc.Col(dcc.Graph(id='Sex-Barplot',figure=sex_fig)),
                                                 dbc.Col(dcc.Graph(id='SES-Barplot',figure=ses_fig)),
-                                                dbc.Col(dcc.Graph(id='EDUC-Barplot',figure=educ_fig))
                                         ]),
                                         dbc.Row([
+                                                dbc.Col(dcc.Graph(id='EDUC-Barplot',figure=educ_fig)),
                                                 dbc.Col(dcc.Graph(id='eTIV-Barplot',figure=etiv_fig)),
                                                 dbc.Col(dcc.Graph(id='nWBV-Barplot',figure=nwbv_fig))
                                         ]),
                                         dbc.Row([ 
                                                 dbc.Col(dcc.Graph(id='ASF-Barplot',figure=asf_fig)),
-                                                dbc.Col(dcc.Graph(id='Visit-Barplot',figure=visit_fig))
+                                                dbc.Col(dcc.Graph(id='Visit-Barplot',figure=visit_fig)),
+                                                dbc.Col(dcc.Graph(id='MRDelay-Barplot', figure=mrdelay_fig))
                                         ]),
                                 ]),
                         ]),
@@ -236,6 +237,7 @@ app.layout = html.Div([
                                                                              {'label': 'Estimated Total Intracranial Volume', 'value': 'eTIV'},
                                                                              {'label': 'Normalized Whole Brain Volume', 'value': 'nWBV'},
                                                                              {'label': 'Atlas Scaling Factor', 'value': 'ASF'},
+                                                                             {'label': 'MR Delay', 'value':'MR Delay'},
                                                                      ],
                                                                      value='ALL',
                                                                      placeholder="Select Feature of Interest",                       # give the dropdown a placeholder
@@ -266,8 +268,9 @@ app.layout = html.Div([
                                                      style_data_conditional=[                                           # make the cells with alpha<0.5 #DBAE58
                                                         {'if':{'filter_query':'{Age}<0.05', 'column_id':'Age'},'backgroundColor':'#DBAE58'},
                                                         {'if':{'filter_query':'{Visit}<0.05', 'column_id':'Visit'},'backgroundColor':'#DBAE58'},
+                                                        {'if':{'filter_query':'{MR Delay}<0.05', 'column_id':'MR Delay'},'backgroundColor':'#DBAE58'},
                                                         {'if':{'filter_query':'{M/F}<0.05', 'column_id':'M/F'},'backgroundColor':'#DBAE58'},
-                                                        {'if':{'filter_query':'{SES}<0.05', 'column_id':'SES'},'backgroundColor':'#DBAE58'},
+                                                        {'if':{'filter_query':'{SES}<0.1', 'column_id':'SES'},'backgroundColor':'#FFE800'},
                                                         {'if':{'filter_query':'{EDUC}<0.05', 'column_id':'EDUC'},'backgroundColor':'#DBAE58'},
                                                         {'if':{'filter_query':'{ASF}<0.05', 'column_id':'ASF'},'backgroundColor':'#DBAE58'},
                                                         {'if':{'filter_query':'{eTIV}<0.05', 'column_id':'eTIV'},'backgroundColor':'#DBAE58'},
@@ -289,14 +292,6 @@ app.layout = html.Div([
                                         dbc.Col(dcc.Dropdown(id='site-dropdown-sex',options=[{'label': 'Male', 'value': 1},{'label': 'Female', 'value': 0},],
                                                              value='ALL',placeholder="Select Sex of Patient",searchable=True,))
                                 ]),
-                                dbc.Row([       # have the user input the visits
-                                        dbc.Col(html.P('Number of Visits the Patient Attended: ')),
-                                        dbc.Col(dcc.Input(id='U_visit',type="number",placeholder="Between 1 and 5", min=1, max=5, style=input_style))
-                                ]),
-                                dbc.Row([       # have the user input the age
-                                        dbc.Col(html.P('Age of the Patient: ')),
-                                        dbc.Col(dcc.Input(id='U_Age',type="number",placeholder="Years", min=1, max=120, style=input_style))
-                                ]),
                                 dbc.Row([       # have the user input the SES
                                         dbc.Col(html.P('Social Economic Status of the Patient: ')),
                                         dbc.Col(dcc.Input(id='U_SES', type="number", placeholder="Between 1 and 5", min=1, max=5, style=input_style))
@@ -304,14 +299,6 @@ app.layout = html.Div([
                                 dbc.Row([       # have the user input the EDUC
                                         dbc.Col(html.P('Education Level of the Patient: ')),
                                         dbc.Col(dcc.Input(id='U_EDUC', type="number", placeholder="Below 23", min=0, max=23, style=input_style))
-                                ]),
-                                dbc.Row([       # have the user input the ASF
-                                        dbc.Col(html.P('Atlas Scaling Factor of the Patient')),
-                                        dbc.Col(dcc.Input(id='U_ASF', type="number", placeholder="Between 0 and 2", min=0, max=2, style=input_style))
-                                ]),
-                                dbc.Row([       # have the user input the eTIV
-                                        dbc.Col(html.P('Estimated Total Intracranial Volume of the Patient: ')),
-                                        dbc.Col(dcc.Input(id='U_eTIV', type="number", placeholder="Between 0 and 3000", min=0, max=3000, style=input_style))
                                 ]),
                                 dbc.Row([       # have the user input the nWBV
                                         dbc.Col(html.P('Normalized Whole Brain Volume of the Patient: ')),
@@ -381,18 +368,14 @@ def update_subgraph(hoverData, site_dropdown_choice):
 # create the callback function for the machine learning model
 @app.callback(Output(component_id='Prediction', component_property='children'),                 # output the prediction from the following model
                 Input(component_id='submit-val',component_property='n_clicks'),                 # get the number of times the button has been clicked as the input
-                State(component_id='U_visit', component_property='value'),                      # the user inputs are states
-                State(component_id='U_Age', component_property='value'),
                 State(component_id='site-dropdown-sex', component_property='value'),
                 State(component_id='U_SES', component_property='value'),
                 State(component_id='U_EDUC', component_property='value'),
-                State(component_id='U_ASF', component_property='value'),
-                State(component_id='U_eTIV', component_property='value'),
                 State(component_id='U_nWBV', component_property='value'),
         )
 # create a function to run the machine learning model using the user input
-def run_model(n_clicks,visit,age,sex,SES,EDUC,ASF,eTIV,nWBV):
-        user_input = np.array([[visit, sex, age, EDUC, SES, eTIV, nWBV,  ASF]])         # create an array of the user input
+def run_model(n_clicks,sex,SES,EDUC,nWBV, ):
+        user_input = np.array([[sex, EDUC, SES, nWBV,]])         # create an array of the user input
         user_input = sc.transform(user_input)                                           # normalize that array based on the training data
         prediction = svm_model.predict(user_input)                                      # run the model to get a prediction                                                     # set the previous number of clicks to the current number of clicks
         return f'Prediction: {prediction}'                                              # return the model
